@@ -5,5 +5,5 @@ export const appInfo = {
     WIDTH: Dimensions.get('window').width,
     HEIGHT: Dimensions.get('window').height,
   },
-  ITEM_HEIGHT: 130,
+  ITEM_HEIGHT: 100,
 };

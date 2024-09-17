@@ -4,4 +4,5 @@ export const NavigationConstants = {
    SummaryScreen: 'SummaryScreen',
    TotalScreen: 'TotalScreen',
    DetailDeviceScreen: 'DetailDeviceScreen',
+   ReceiptScreen: 'ReceiptScreen',
 };

@@ -1,5 +1,5 @@
 import {StyleProp, ViewStyle, StyleSheet, TouchableOpacity} from 'react-native';
-import React, {Children, ReactNode} from 'react';
+import React, {ReactNode} from 'react';
 import TextComponent from './TextComponent';
 import { globalStyles } from '../utilities/styles/globalStyles';
 import { appColors } from '../utilities/contants/appColor';
@@ -14,6 +14,8 @@ interface Props {
   type: 'button' | 'text' | 'link' | 'item';
   backgroundColor?: string;
   children?: ReactNode;
+  textStyle?: StyleProp<ViewStyle>,
+  disabled?: Boolean
 }
 
 const ButtonComponent = (props: Props) => {
@@ -27,6 +29,8 @@ const ButtonComponent = (props: Props) => {
     style,
     type,
     backgroundColor,
+    textStyle,
+    disabled,
   } = props;
 
   return type === 'button' ? (
@@ -36,14 +40,15 @@ const ButtonComponent = (props: Props) => {
         globalStyles.shadow,
         style,
         {backgroundColor: backgroundColor ?? appColors.blue},
-        {justifyContent: 'center'},
+        styles.touchButton,
       ]}
-      activeOpacity={0.5}
+      activeOpacity={disabled ? 1 : 0.5}
+      disabled={disabled && false}
       onPress={onPress}>
       {frontIcon && frontIcon}
       <TextComponent
         text={title}
-        style={[styles.title, {flex: frontIcon ? 0 : 1, paddingHorizontal: 15}]}
+        style={[styles.title, {flex: frontIcon ? 0 : 1}, styles.titleButton]}
         color={titleColor ?? appColors.white}
       />
       {backIcon && backIcon}
@@ -55,20 +60,21 @@ const ButtonComponent = (props: Props) => {
             globalStyles.shadow,
             style,
             {backgroundColor: backgroundColor ?? appColors.blue},
-            {justifyContent: 'center'},
-            {alignItems: 'center', flexDirection: 'column'},
+            styles.touchItem,
             ]}
-            activeOpacity={0.5}
+            activeOpacity={disabled ? 1 : 0.5}
+            disabled={disabled && false}
             onPress={onPress}>
             {children}
          </TouchableOpacity>
       :
       (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity disabled={disabled && false} onPress={onPress}>
       <TextComponent
         text={title}
         style={[
           styles.text,
+          textStyle,
           {
             color:
               titleColor ?? type === 'link'
@@ -90,6 +96,9 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
   },
+  touchButton: {justifyContent: 'center'},
+  touchItem: {alignItems: 'center', flexDirection: 'column', justifyContent: 'center'},
+  titleButton: {paddingHorizontal: 15},
 });
 
 export default ButtonComponent;

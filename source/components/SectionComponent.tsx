@@ -1,14 +1,18 @@
-import {StyleProp, View, ViewStyle} from 'react-native';
-import React, {ReactNode} from 'react';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import React, { ReactNode } from 'react';
 
 interface Props {
-  children: ReactNode;
-  style?: StyleProp<ViewStyle>;
+   children: ReactNode;
+   style?: StyleProp<ViewStyle>;
 }
 
 const SectionComponent = (props: Props) => {
-  const {style, children} = props;
-  return <View style={[{paddingHorizontal: 20}, style]}>{children}</View>;
+   const { style, children } = props;
+   return <View style={[styles.container, style]}>{children}</View>;
 };
+
+const styles = StyleSheet.create({
+   container: { paddingHorizontal: 20 },
+});
 
 export default SectionComponent;

@@ -17,6 +17,7 @@ export const appColors = {
    typography5: '#D0CFD4',
    typography6: '#E7E7E9',
    accent: '#F0635A',
+   accent1: '#bf4841',
    accent2: '#F59762',
    accent3: '#29D697',
    accent4: '#46CDFB',
