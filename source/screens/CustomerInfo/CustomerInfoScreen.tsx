@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import ContainerComponent from '../../components/ContainerComponent';
 import SectionComponent from '../../components/SectionComponent';
 import TextComponent from '../../components/TextComponent';
@@ -11,6 +11,16 @@ import { NavigationConstants } from '../../navigation/NavigationConstants';
 import { useAppDispatch } from '../../redux/Hooks';
 import { CustomerState, CustomerUpdate } from '../../redux/Reducers/CustomerSlice';
 import { appInfo } from '../../utilities/Contants/appInfo';
+
+type InputType = 'phoneNumber' | 'fullName' | 'email' | 'address' | 'dayOfBirth';
+
+enum INPUT_TYPES {
+   PhoneNumber = 'phoneNumber',
+   Name = 'fullName',
+   Email = 'email',
+   Address = 'address',
+   Birth = 'dayOfBirth'
+}
 
 const CustomerInfoScreen = ({ navigation, route }: any) => {
 
@@ -74,6 +84,31 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
       }
    };
 
+   const handleInputChange = useCallback((text: string, type: InputType) => {
+      if (errors.delete(type)) {
+         setErrors(errors);
+      }
+      switch (type) {
+         case INPUT_TYPES.PhoneNumber:
+            setPhoneNumber(text);
+            break;
+         case INPUT_TYPES.Address:
+            setAddress(text);
+            break;
+         case INPUT_TYPES.Birth:
+            setDayOfBirth(text);
+            break;
+         case INPUT_TYPES.Email:
+            setEmail(text);
+            break;
+         case INPUT_TYPES.Name:
+            setFullName(text);
+            break;
+         default:
+            break;
+      }
+   }, [errors, setErrors, setPhoneNumber, setAddress, setDayOfBirth, setEmail, setFullName]);
+
    console.log('---------- CustomerInfoScreen ----------');
    return (
       <ContainerComponent
@@ -88,12 +123,7 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
                   style={styles.marginBottomLess}
                />
                <InputComponent
-                  onChange={val => {
-                     if (errors.delete('fullName')) {
-                        setErrors(errors);
-                     }
-                     setFullName(val);
-                  }}
+                  onChange={(text) => handleInputChange(text, INPUT_TYPES.Name)}
                   value={fullName}
                   placeholder="Full name"
                   isClear
@@ -101,12 +131,7 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
                   frontIcon={<User size={22} color={appColors.gray} />}
                />
                <InputComponent
-                  onChange={val => {
-                     if (errors.delete('phoneNumber')) {
-                        setErrors(errors);
-                     }
-                     setPhoneNumber(val);
-                  }}
+                  onChange={(text) => handleInputChange(text, INPUT_TYPES.PhoneNumber)}
                   value={phoneNumber}
                   placeholder="Phone number"
                   isClear
@@ -114,12 +139,7 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
                   frontIcon={<Call size={22} color={appColors.gray} />}
                />
                <InputComponent
-                  onChange={val => {
-                     if (errors.delete('email')) {
-                        setErrors(errors);
-                     }
-                     setEmail(val);
-                  }}
+                  onChange={(text) => handleInputChange(text, INPUT_TYPES.Email)}
                   value={email}
                   type="email-address"
                   isClear
@@ -127,12 +147,7 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
                   frontIcon={<Sms size={22} color={appColors.gray} />}
                />
                <InputComponent
-                  onChange={val => {
-                     if (errors.delete('dayOfBirth')) {
-                        setErrors(errors);
-                     }
-                     setDayOfBirth(val);
-                  }}
+                  onChange={(text) => handleInputChange(text, INPUT_TYPES.Birth)}
                   placeholder="Day of birth"
                   value={dayOfBirth}
                   type="email-address"
@@ -141,12 +156,7 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
                   frontIcon={<Calendar size={22} color={appColors.gray} />}
                />
                <InputComponent
-                  onChange={val => {
-                     if (errors.delete('address')) {
-                        setErrors(errors);
-                     }
-                     setAddress(val);
-                  }}
+                  onChange={(text) => handleInputChange(text, INPUT_TYPES.Address)}
                   placeholder="Address"
                   value={address}
                   type="email-address"
@@ -154,15 +164,18 @@ const CustomerInfoScreen = ({ navigation, route }: any) => {
                   style={styles.marginBottom}
                   frontIcon={<Location size={22} color={appColors.gray} />}
                />
-               {errors &&
-                  Array.from(errors).map(([key, value]) => (
-                     <TextComponent
-                        key={key}
-                        text={value}
-                        color={appColors.red}
-                        style={styles.marginBottomLess}
-                     />
-                  ))}
+               {
+                  errors ?
+                     Array.from(errors).map(([key, value]) => (
+                        <TextComponent
+                           key={key}
+                           text={value}
+                           color={appColors.red}
+                           style={styles.marginBottomLess}
+                        />
+                     ))
+                     : null
+               }
             </SectionComponent>
             <SectionComponent>
                <ButtonComponent

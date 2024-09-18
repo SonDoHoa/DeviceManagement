@@ -1,5 +1,5 @@
 import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import SectionComponent from '../../components/SectionComponent';
 import TextComponent from '../../components/TextComponent';
 import RowComponent from '../../components/RowComponent';
@@ -14,6 +14,17 @@ import ButtonComponent from '../../components/ButtonComponent';
 import { DeviceState, updateDevices } from '../../redux/Reducers/DevicesSlice';
 import { useDispatch } from 'react-redux';
 import { appInfo } from '../../utilities/Contants/appInfo';
+
+type InputType = 'deviceName' | 'deviceDescription' | 'deviceQuantity' | 'deviceNote' | 'deviceFee' | 'deviceStatus';
+
+enum INPUT_TYPES {
+   Name = 'deviceName',
+   Description = 'deviceDescription',
+   Quantity = 'deviceQuantity',
+   Note = 'deviceNote',
+   Fee = 'deviceFee',
+   Status = 'deviceStatus'
+}
 
 const DetailDeviceScreen = ({ route, navigation }: any) => {
 
@@ -94,6 +105,34 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
       navigation.navigate(route.params.prevScreen, { deviceUpdated: updatedData });
    };
 
+   const handleInputChange = useCallback((text: string, type: InputType) => {
+      if (errors.delete(type)) {
+         setErrors(errors);
+      }
+      switch (type) {
+         case INPUT_TYPES.Description:
+            setDeviceDescription(text);
+            break;
+         case INPUT_TYPES.Fee:
+            setDeviceFee(text);
+            break;
+         case INPUT_TYPES.Note:
+            setDeviceNote(text);
+            break;
+         case INPUT_TYPES.Quantity:
+            setDeviceQuantity(text);
+            break;
+         case INPUT_TYPES.Name:
+            setDeviceName(text);
+            break;
+         case INPUT_TYPES.Status:
+            setDeviceStatus(text);
+            break;
+         default:
+            break;
+      }
+   }, [errors, setErrors, setDeviceDescription, setDeviceFee, setDeviceNote, setDeviceQuantity, setDeviceName, setDeviceStatus]);
+
    console.log('---------- DetailDeviceScreen ----------');
    return (
       <ContainerComponent
@@ -111,12 +150,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
             />
             <Image source={handleRenderDeviceImage()} width={100} height={100} />
             <InputComponent
-               onChange={val => {
-                  if (errors.delete('deviceName')) {
-                     setErrors(errors);
-                  }
-                  setDeviceName(val);
-               }}
+               onChange={text => handleInputChange(text, INPUT_TYPES.Name)}
                value={deviceName}
                placeholder="Device name"
                isClear={isEdit}
@@ -124,12 +158,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                style={styles.fieldMarginBottom}
             />
             <InputComponent
-               onChange={val => {
-                  if (errors.delete('deviceDescription')) {
-                     setErrors(errors);
-                  }
-                  setDeviceDescription(val);
-               }}
+               onChange={text => handleInputChange(text, INPUT_TYPES.Description)}
                value={deviceDescription}
                placeholder="Description"
                isClear={isEdit}
@@ -140,12 +169,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
             {
                !deviceStatus ?
                   <InputComponent
-                     onChange={val => {
-                        if (errors.delete('email')) {
-                           setErrors(errors);
-                        }
-                        setDeviceStatus(val);
-                     }}
+                     onChange={text => handleInputChange(text, INPUT_TYPES.Status)}
                      placeholder="Status"
                      value={'Out of stock'}
                      type="default"
@@ -153,12 +177,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                   />
                   :
                   <InputComponent
-                     onChange={val => {
-                        if (errors.delete('email')) {
-                           setErrors(errors);
-                        }
-                        setDeviceQuantity(val);
-                     }}
+                     onChange={text => handleInputChange(text, INPUT_TYPES.Quantity)}
                      value={deviceQuantity.toString()}
                      placeholder="Quantity"
                      isClear={isEdit}
@@ -167,13 +186,8 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                   />
             }
             <InputComponent
-               onChange={val => {
-                  if (errors.delete('email')) {
-                     setErrors(errors);
-                  }
-                  setDeviceNote(val);
-               }}
-               placeholder="Address"
+               onChange={text => handleInputChange(text, INPUT_TYPES.Note)}
+               placeholder="Note"
                value={deviceNote}
                type="email-address"
                isClear={isEdit}
@@ -181,12 +195,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                style={styles.fieldMarginBottom}
             />
             <InputComponent
-               onChange={val => {
-                  if (errors.delete('email')) {
-                     setErrors(errors);
-                  }
-                  setDeviceFee(val);
-               }}
+               onChange={text => handleInputChange(text, INPUT_TYPES.Fee)}
                placeholder="Address"
                value={deviceFee}
                type="email-address"
@@ -194,7 +203,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                editable={isEdit}
                style={styles.fieldMarginBottom}
             />
-            {errors &&
+            {errors ?
                Array.from(errors).map(([key, value]) => (
                   <TextComponent
                      key={key}
@@ -202,7 +211,8 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                      color={appColors.red}
                      style={styles.fieldMarginBottom}
                   />
-               ))}
+               )) : null
+            }
          </SectionComponent>
          <SectionComponent>
             <RowComponent style={styles.footer} justify="space-between">

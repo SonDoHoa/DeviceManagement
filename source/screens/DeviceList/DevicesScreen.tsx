@@ -151,7 +151,7 @@ const DevicesScreen = ({ navigation }: any) => {
       if (filteredData.length > 0) {
          return filteredData[filteredData.indexOf(item)].isSelected;
       }
-      return data[data.indexOf(item)].isSelected;
+      return data[data.indexOf(item)]?.isSelected;
    };
 
    const selectPressed = () => {
@@ -164,7 +164,12 @@ const DevicesScreen = ({ navigation }: any) => {
    };
 
    const goToSummary = () => {
-      selectPressed();
+      setSelected(false);
+      if (searchText !== '') {
+         setFilteredData(filteredData.map((it: any) => { return { ...it, isSelected: false }; }));
+      } else {
+         setData(data.map(it => { return { ...it, isSelected: false }; }));
+      }
       navigation.navigate(NavigationConstants.SummaryScreen, { prevScreen: NavigationConstants.DevicesScreen });
    };
 
@@ -199,7 +204,7 @@ const DevicesScreen = ({ navigation }: any) => {
          <FlatList
             data={searchText ? filteredData : data}
             extraData={[searchText, data, filteredData]}
-            renderItem={(item) => <DeviceComponent item={item.item} onPress={goToDetailDeviceItem} isSelect={checkSelectedItem(item.item)} />}
+            renderItem={(item) => <DeviceComponent item={item?.item} onPress={goToDetailDeviceItem} isSelect={checkSelectedItem(item?.item)} />}
             keyExtractor={item => item.id.toString()}
             getItemLayout={(_data, index) => ({
                length: appInfo.ITEM_HEIGHT,
