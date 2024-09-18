@@ -5,20 +5,23 @@ import TextComponent from '../../components/TextComponent';
 import RowComponent from '../../components/RowComponent';
 import SectionComponent from '../../components/SectionComponent';
 import DeviceComponent from '../../components/DeviceComponent';
-import { appInfo } from '../../utilities/contants/appInfo';
-import { ArrowLeft } from 'iconsax-react-native';
-import { appColors } from '../../utilities/contants/appColor';
+import { appInfo } from '../../utilities/Contants/appInfo';
+import { ArrowLeft, ArrowRight } from 'iconsax-react-native';
+import { appColors } from '../../utilities/Contants/appColor';
 import { useAppSelector } from '../../redux/Hooks';
 import { RootState } from '../../redux/store';
 import { DeviceState } from '../../redux/Reducers/DevicesSlice';
+import { TouchableOpacity } from 'react-native';
+import { NavigationConstants } from '../../navigation/NavigationConstants';
 
-const ReceiptScreen = ({ navigation, route }: any) => {
-   console.log('----------ReceiptScreen----------');
-   const data = useRef<DeviceState[]>(route.params.data);
+const ReceiptScreen = ({ navigation }: any) => {
+
+   const selectedDevices = useAppSelector((state) => state.devices.devices);
+   const data = useRef<DeviceState[]>(selectedDevices);
    const customerInfo = useAppSelector((state: RootState) => state.customer);
 
    const leftPressed = () => {
-      navigation.goBack();
+      navigation.navigate(NavigationConstants.SummaryScreen);
    };
 
    const getTotal = () => {
@@ -27,29 +30,40 @@ const ReceiptScreen = ({ navigation, route }: any) => {
       return total;
    };
 
+   const updateCustomerInfo = () => {
+      navigation.navigate(NavigationConstants.CustomerInfoScreen, { prevScreen: NavigationConstants.ReceiptScreen });
+   };
+
+   console.log('---------- ReceiptScreen ----------');
    return (
       <ContainerComponent
          isBackgroundImage
-         isScroll left={<ArrowLeft size={35} color={appColors.black} />} onPressLeft={leftPressed}
+         left={<ArrowLeft size={35} color={appColors.black} />} onPressLeft={leftPressed}
       >
          <TextComponent isTitle text="Receipt" style={styles.headerTitle} />
          <SectionComponent style={styles.section}>
-            <TextComponent text={`full name: ${customerInfo.fullName}`} />
-            <RowComponent justify="space-between">
-               <TextComponent text={`Phone number: ${customerInfo.phoneNumber}`} />
-               <TextComponent text={`email: ${customerInfo.email}`} />
-            </RowComponent>
-            <RowComponent justify="space-between">
-               <TextComponent text={`address: ${customerInfo.address}`} />
-               <TextComponent text={`Day of birth: ${customerInfo.dayOfBirth}`} />
-            </RowComponent>
+            <TouchableOpacity onPress={updateCustomerInfo} style={styles.customerInfo}>
+               <RowComponent justify="space-between">
+                  <TextComponent text={`full name: ${customerInfo.fullName}`} />
+                  <ArrowRight size={30} color={appColors.black} />
+               </RowComponent>
+               <RowComponent justify="space-between">
+                  <TextComponent text={`Phone number: ${customerInfo.phoneNumber}`} />
+                  <TextComponent text={`email: ${customerInfo.email}`} />
+               </RowComponent>
+               <RowComponent justify="space-between">
+                  <TextComponent text={`address: ${customerInfo.address}`} />
+                  <TextComponent text={`Day of birth: ${customerInfo.dayOfBirth}`} />
+               </RowComponent>
+            </TouchableOpacity>
+
          </SectionComponent>
          <SectionComponent style={styles.section}>
             <FlatList
                data={data.current}
                renderItem={(item) => <DeviceComponent item={item.item} onPress={() => { }} disabled={true} />}
                keyExtractor={item => item.id.toString()}
-               getItemLayout={(data, index) => ({
+               getItemLayout={(_data, index) => ({
                   length: appInfo.ITEM_HEIGHT,
                   offset: appInfo.ITEM_HEIGHT * index,
                   index,
@@ -59,7 +73,7 @@ const ReceiptScreen = ({ navigation, route }: any) => {
                windowSize={8}
                removeClippedSubviews={true}
                showsVerticalScrollIndicator={false}
-               style={styles.flatlist}
+               style={styles.flatList}
             />
          </SectionComponent>
          <SectionComponent style={styles.section}>
@@ -83,5 +97,13 @@ const styles = StyleSheet.create({
       marginBottom: 30,
       paddingHorizontal: 20,
    },
-   flatlist: { alignSelf: 'center' },
+   flatList: {
+      alignSelf: 'center',
+      maxHeight: appInfo.sizes.HEIGHT * 0.62,
+   },
+   customerInfo: {
+      borderWidth: 1,
+      borderRadius: 15,
+      padding: 15,
+   },
 });

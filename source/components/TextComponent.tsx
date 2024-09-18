@@ -1,7 +1,7 @@
 import { StyleProp, Text, TextStyle } from 'react-native';
 import React from 'react';
-import { globalStyles } from '../utilities/styles/globalStyles';
-import { appColors } from '../utilities/contants/appColor';
+import { globalStyles } from '../utilities/Styles/globalStyles';
+import { appColors } from '../utilities/Contants/appColor';
 
 interface Props {
    text: string;
@@ -15,7 +15,9 @@ interface Props {
 }
 
 const TextComponent = (props: Props) => {
+
    const { text, color, style, isTitle, flex, size, numberOfLines } = props;
+
    return (
       <Text
          style={[

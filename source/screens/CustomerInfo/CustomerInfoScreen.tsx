@@ -4,14 +4,16 @@ import ContainerComponent from '../../components/ContainerComponent';
 import SectionComponent from '../../components/SectionComponent';
 import TextComponent from '../../components/TextComponent';
 import InputComponent from '../../components/InputComponent';
-import { appColors } from '../../utilities/contants/appColor';
+import { appColors } from '../../utilities/Contants/appColor';
 import ButtonComponent from '../../components/ButtonComponent';
 import { Sms, ArrowRight, User, Call, Calendar, Location } from 'iconsax-react-native';
 import { NavigationConstants } from '../../navigation/NavigationConstants';
 import { useAppDispatch } from '../../redux/Hooks';
 import { CustomerState, CustomerUpdate } from '../../redux/Reducers/CustomerSlice';
+import { appInfo } from '../../utilities/Contants/appInfo';
 
-const CustomerInfoScreen = ({ navigation }: any) => {
+const CustomerInfoScreen = ({ navigation, route }: any) => {
+
    const [fullName, setFullName] = useState<string>('');
    const [phoneNumber, setPhoneNumber] = useState<string>('');
    const [email, setEmail] = useState<string>('');
@@ -23,26 +25,32 @@ const CustomerInfoScreen = ({ navigation }: any) => {
    const handleRegister = () => {
       const mErrors = new Map<string, string>();
       if (!email || !fullName || !phoneNumber || !address || !dayOfBirth) {
-         mErrors.set('all', 'Please fill up fields');
+         mErrors.set('all', 'Please fill up missing fields');
       } else {
-         if (!email) {
-            mErrors.set('email', 'Please fill in your email');
+
+         const mailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+         if (email && !mailRegex.test(email)) {
+            mErrors.set('email', 'Please enter email in correct format');
          }
 
-         if (!fullName) {
-            mErrors.set('fullName', 'Please fill in your Full name');
+         const nameRegex = /[\da-zA-Zㄱ-ㆌ]{5,12}/;
+         if (fullName && !nameRegex.test(fullName)) {
+            mErrors.set('fullName', 'begins with a letter and has at least 4 characters');
          }
 
-         if (!address) {
-            mErrors.set('address', 'Please fill in your address');
+         const addressRegex = /^\s*\S+(?:\s+\S+){2}/;
+         if (address && !addressRegex.test(address)) {
+            mErrors.set('address', 'Please enter address in correct format');
          }
 
-         if (!dayOfBirth) {
-            mErrors.set('dayOfBirth', 'Please fill in your day of birth');
+         const birthDateRegex = /^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/;
+         if (dayOfBirth && !birthDateRegex.test(dayOfBirth)) {
+            mErrors.set('dayOfBirth', 'dd/mm/yyyy, dd-mm-yyyy or dd.mm.yyyy');
          }
 
-         if (!phoneNumber) {
-            mErrors.set('phoneNumber', 'Please fill in your phone number');
+         const phoneNumberRegex = /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
+         if (phoneNumber && !phoneNumberRegex.test(phoneNumber)) {
+            mErrors.set('phoneNumber', 'Please enter the phone number in the format like 0971989877');
          }
       }
 
@@ -58,14 +66,18 @@ const CustomerInfoScreen = ({ navigation }: any) => {
             phoneNumber: phoneNumber,
          };
          dispatch(CustomerUpdate(customerInfo));
-         navigation.navigate(NavigationConstants.DevicesScreen);
+         if (route?.params?.prevScreen !== undefined) {
+            navigation.navigate(route.params.prevScreen);
+         } else {
+            navigation.navigate(NavigationConstants.DevicesScreen);
+         }
       }
    };
 
+   console.log('---------- CustomerInfoScreen ----------');
    return (
       <ContainerComponent
          isBackgroundImage
-         headerTitle=""
       >
          <View style={styles.view}>
             <SectionComponent>
@@ -156,6 +168,7 @@ const CustomerInfoScreen = ({ navigation }: any) => {
                <ButtonComponent
                   title="REGISTER"
                   type="button"
+                  style={styles.registerBtn}
                   onPress={handleRegister}
                   backIcon={
                      <View
@@ -171,8 +184,12 @@ const CustomerInfoScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-   marginBottom: { marginBottom: 20 },
-   marginBottomLess: { marginBottom: 16 },
+   marginBottom: {
+      marginBottom: 20,
+   },
+   marginBottomLess: {
+      marginBottom: 16,
+   },
    buttonRegister: {
       padding: 7,
       borderRadius: 10000,
@@ -180,7 +197,15 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
    },
-   view: { borderWidth: 1, flex: 1, justifyContent: 'center' },
+   view: {
+      borderWidth: 1,
+      flex: 1,
+      justifyContent: 'center',
+   },
+   registerBtn: {
+      minHeight: 58,
+      minWidth: appInfo.sizes.WIDTH * 0.8,
+   },
 });
 
 export default CustomerInfoScreen;

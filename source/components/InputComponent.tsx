@@ -9,8 +9,8 @@ import {
    Keyboard,
 } from 'react-native';
 import React, { ReactNode, useState } from 'react';
-import { globalStyles } from '../utilities/styles/globalStyles';
-import { appColors } from '../utilities/contants/appColor';
+import { globalStyles } from '../utilities/Styles/globalStyles';
+import { appColors } from '../utilities/Contants/appColor';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 

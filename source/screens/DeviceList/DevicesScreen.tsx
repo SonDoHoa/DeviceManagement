@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet } from 'react-native';
 import React, { useCallback, useRef, useState } from 'react';
-import { appColors } from '../../utilities/contants/appColor';
+import { appColors } from '../../utilities/Contants/appColor';
 import TextComponent from '../../components/TextComponent';
 import { View } from 'react-native';
 import { StatusBar } from 'react-native';
@@ -9,11 +9,11 @@ import InputComponent from '../../components/InputComponent';
 import { SearchNormal1 } from 'iconsax-react-native';
 import { NavigationConstants } from '../../navigation/NavigationConstants';
 import { DATA } from '../../assets/deviceDatas/DATA';
-import { appInfo } from '../../utilities/contants/appInfo';
+import { appInfo } from '../../utilities/Contants/appInfo';
 import RowComponent from '../../components/RowComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import { useDispatch } from 'react-redux';
-import { DeviceState, addDevices, removeDevices } from '../../redux/Reducers/DevicesSlice';
+import { DeviceState, addDevices, clearCart, removeDevices } from '../../redux/Reducers/DevicesSlice';
 
 const DevicesScreen = ({ navigation }: any) => {
 
@@ -28,11 +28,11 @@ const DevicesScreen = ({ navigation }: any) => {
 
    const goToDetailDeviceItem = (item: any) => {
       if (!isSelected) {
-         console.log('goToDetailDeviceItem: ', item);
-         navigation.navigate(NavigationConstants.DetailDeviceScreen, { item });
+         console.log('Go to detail device with item: ', item);
+         navigation.navigate(NavigationConstants.DetailDeviceScreen, { item, prevScreen: NavigationConstants.DevicesScreen });
       } else {
          setData(data.map(it => {
-            return (it.id === item.id) ? { ...it, isSelected: true } : it;
+            return (it.id === item.id) ? { ...it, isSelected: !item.isSelected } : it;
          }));
       }
    };
@@ -59,15 +59,6 @@ const DevicesScreen = ({ navigation }: any) => {
       setSelected(false);
    };
 
-   const handleRemoveDevices = () => {
-      if (searchText !== '') {
-         setFilteredData(filteredData.filter((item: any) => item.isSelected !== true));
-      } else {
-         setData(data.filter(item => item.isSelected !== true));
-      }
-      dispatch(removeDevices(getSelectedData()));
-   };
-
    const getSelectedData = () => {
       let selectedData = [];
       if (filteredData.length > 0) {
@@ -79,7 +70,34 @@ const DevicesScreen = ({ navigation }: any) => {
       return selectedData;
    };
 
+   const handleRemoveDevices = () => {
+      if (searchText !== '') {
+         setFilteredData(filteredData.filter((item: any) => item.isSelected !== true));
+
+      } else {
+         setData(data.filter(item => item.isSelected !== true));
+      }
+
+      if (filteredData.filter((item: any) => item.isSelected !== false).length === 0 || data.filter((item: any) => item.isSelected !== false).length === 0) {
+         setSelected(false);
+      }
+
+      dispatch(removeDevices(getSelectedData().map((it: DeviceState) => {
+         return {
+            id: it.id,
+            name: it.name,
+            description: it.description,
+            quantity: it.quantity,
+            status: it.status,
+            note: it.note,
+            fee: it.fee,
+            image: it.image,
+         };
+      })));
+   };
+
    const handleAddToCart = () => {
+      dispatch(clearCart());
       dispatch(addDevices(getSelectedData().map((item: DeviceState) => {
          return {
             id: item.id,
@@ -92,6 +110,7 @@ const DevicesScreen = ({ navigation }: any) => {
             image: item.image,
          };
       })));
+      selectPressed();
       navigation.navigate(NavigationConstants.SummaryScreen);
    };
 
@@ -135,14 +154,38 @@ const DevicesScreen = ({ navigation }: any) => {
       return data[data.indexOf(item)].isSelected;
    };
 
+   const selectPressed = () => {
+      setSelected(!isSelected);
+      if (searchText !== '') {
+         setFilteredData(filteredData.map((it: any) => { return { ...it, isSelected: false }; }));
+      } else {
+         setData(data.map(it => { return { ...it, isSelected: false }; }));
+      }
+   };
+
+   const goToSummary = () => {
+      selectPressed();
+      navigation.navigate(NavigationConstants.SummaryScreen, { prevScreen: NavigationConstants.DevicesScreen });
+   };
+
+   console.log('---------- DevicesScreen ----------');
    return (
       <View style={styles.container}>
          <View style={styles.headerView}>
             <TextComponent text="Devices" isTitle />
-            <ButtonComponent onPress={() => { setSelected(!isSelected); }}
+            <ButtonComponent onPress={goToSummary}
+               title="Summary"
+               textStyle={styles.headerTitle}
+               type="button"
+               backgroundColor={appColors.blue4}
+               style={styles.summaryBtn}
+            />
+            <ButtonComponent onPress={selectPressed}
                title="Select"
                textStyle={styles.headerTitle}
-               type="text"
+               type="button"
+               backgroundColor={isSelected ? appColors.blue2 : appColors.blue4}
+               style={styles.selectBtn}
             />
          </View>
          <InputComponent
@@ -158,7 +201,7 @@ const DevicesScreen = ({ navigation }: any) => {
             extraData={[searchText, data, filteredData]}
             renderItem={(item) => <DeviceComponent item={item.item} onPress={goToDetailDeviceItem} isSelect={checkSelectedItem(item.item)} />}
             keyExtractor={item => item.id.toString()}
-            getItemLayout={(data, index) => ({
+            getItemLayout={(_data, index) => ({
                length: appInfo.ITEM_HEIGHT,
                offset: appInfo.ITEM_HEIGHT * index,
                index,
@@ -168,7 +211,7 @@ const DevicesScreen = ({ navigation }: any) => {
             windowSize={8}
             removeClippedSubviews={true}
             showsVerticalScrollIndicator={false}
-            style={styles.flatlist}
+            style={styles.flatList}
          />
          {
             (isSelected && data.some(e => e.isSelected === true)) &&
@@ -210,11 +253,24 @@ const styles = StyleSheet.create({
    title: {
       fontSize: 32,
    },
-   headerView: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+   headerView: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 10,
+   },
    headerTitle: { padding: 20, fontSize: 17 },
    input: { marginBottom: 20 },
-   flatlist: { alignSelf: 'center' },
+   flatList: { alignSelf: 'center' },
    button: { padding: 15, fontSize: 17 },
+   selectBtn: {
+      width: 100,
+      height: 40,
+   },
+   summaryBtn: {
+      width: 140,
+      height: 40,
+   },
 });
 
 export default DevicesScreen;

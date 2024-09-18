@@ -8,13 +8,15 @@ import {
    ArrowLeft,
    ArrowRight,
 } from 'iconsax-react-native';
-import { appColors } from '../../utilities/contants/appColor';
+import { appColors } from '../../utilities/Contants/appColor';
 import InputComponent from '../../components/InputComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import { DeviceState, updateDevices } from '../../redux/Reducers/DevicesSlice';
 import { useDispatch } from 'react-redux';
+import { appInfo } from '../../utilities/Contants/appInfo';
 
 const DetailDeviceScreen = ({ route, navigation }: any) => {
+
    const { name, description, quantity, status, note, fee, image, id } = route.params.item;
 
    const [deviceName, setDeviceName] = useState<string>(name);
@@ -72,22 +74,34 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
             status: status,
          };
          dispatch(updateDevices(updatedData));
-         console.log('edit device info success');
+         console.log('edit device info success: ', updatedData);
          setIsEdit(false);
       }
    };
 
    const goBack = () => {
-      navigation;
-      navigation.goBack();
+      console.log('object', route.params.prevScreen);
+      const updatedData: DeviceState = {
+         id: id,
+         image: image,
+         description: deviceDescription,
+         fee: deviceFee,
+         name: deviceName,
+         note: deviceNote,
+         quantity: Number(deviceQuantity),
+         status: status,
+      };
+      navigation.navigate(route.params.prevScreen, { deviceUpdated: updatedData });
    };
 
+   console.log('---------- DetailDeviceScreen ----------');
    return (
       <ContainerComponent
          isBackgroundImage
          isScroll
          left={<ArrowLeft size={35} color={appColors.black} />}
-         onPressLeft={goBack}>
+         onPressLeft={goBack}
+      >
          <SectionComponent>
             <TextComponent
                text="Detail Information"
@@ -191,7 +205,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                ))}
          </SectionComponent>
          <SectionComponent>
-            <RowComponent justify="space-evenly" style={styles.footer}>
+            <RowComponent style={styles.footer} justify="space-between">
                {
                   isEdit ?
                      <ButtonComponent
@@ -200,6 +214,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                         onPress={handleEditSelect}
                         backgroundColor={appColors.white}
                         titleColor={appColors.black}
+                        style={styles.actionBtn}
                      /> : null
                }
                <ButtonComponent
@@ -213,6 +228,7 @@ const DetailDeviceScreen = ({ route, navigation }: any) => {
                      </View>
                   }
                   backgroundColor={isEdit ? appColors.accent : undefined}
+                  style={[isEdit ? styles.actionBtn : styles.editBtn]}
                />
             </RowComponent>
          </SectionComponent>
@@ -231,8 +247,23 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
    },
-   arrowRightEdit: { backgroundColor: appColors.accent1 },
-   footer: { borderColor: 'black', padding: 20, flex: 1 },
+   arrowRightEdit: {
+      backgroundColor: appColors.accent1,
+   },
+   footer: {
+      borderColor: 'black',
+      padding: 20,
+      flex: 1,
+   },
+   actionBtn: {
+      width: appInfo.sizes.WIDTH * 0.35,
+      height: 50,
+   },
+   editBtn: {
+      width: appInfo.sizes.WIDTH * 0.8,
+      height: 50,
+      flex: 1,
+   },
 });
 
 export default DetailDeviceScreen;
